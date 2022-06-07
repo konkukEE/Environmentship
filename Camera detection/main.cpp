@@ -11,7 +11,7 @@ using namespace std;
 
 const char* params
 = "{ help h         |           | Print usage }"
-"{ input          | video3.mp4 | Path to a video or a sequence of image }"
+"{ input          | video4.mp4 | Path to a video or a sequence of image }"
 "{ algo           | MOG2      | Background subtraction method (KNN, MOG2) }";
 
 
@@ -58,15 +58,13 @@ int main(int argc, char* argv[])
 
         ////////////////////////////// WAVE KILLING //////////////////////////////
         if (count++ == 0)
-        {
             threshold(fgMask, dst, 0, 0, THRESH_BINARY);        // threshold(input image, output image, 임계값, 임계값을 넘었을 때의 value, int type(threshold type_아래 링크 참조))
-            printf("ÃÊ±âÈ­!\n");
-        }
+       
         threshold(fgMask, wave, 200, 1, THRESH_BINARY);
         add(wave, dst, dst);            // 영상 산술연산 함수 중 덧셈 연산 add 함수 : add(imageA, imageB, resultC); // c[i]=a[i]+b[i]
         if (count == 20)
         {
-            threshold(dst, dst, 7, 255, THRESH_BINARY);
+            threshold(dst, dst, 8, 255, THRESH_BINARY);
             imshow("WAVE_KILLNG", dst);
             count = 0;
         }
