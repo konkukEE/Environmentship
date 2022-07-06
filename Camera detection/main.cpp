@@ -1,4 +1,5 @@
 ﻿#include <stdio.h>
+#include <iostream>
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <time.h>
@@ -31,7 +32,8 @@ void main(int argc, char* argv[])
 	start1 = clock();
 	Net mnet = readNet(weight, cfg);
 	end1 = clock();
-	VideoCapture capture(samples::findFile(parser.get<String>("input")));
+	//VideoCapture capture(samples::findFile(parser.get<String>("input")));
+	VideoCapture capture(0);
 	if (!capture.isOpened())
 	{
 		cerr << "Unable to open: " << parser.get<String>("input") << endl;
