@@ -1,13 +1,10 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
-#include <stdio.h>
 #include <iostream>
 #include <string>
 #include <fstream>
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <time.h>
-
-#define TEST_FORWARD_INTERVAL 1
 
 using namespace std;
 using namespace cv;
@@ -48,42 +45,99 @@ void main(int argc, char* argv[])
 		return;
 	}
 
-
 	start1 = clock();
 	Net mnet = readNet(weight, cfg);
 	end1 = clock();
-	VideoCapture capture(samples::findFile(parser.get<String>("input")));
-	//VideoCapture capture(0);
+	
+	int select;
+	cout << "모드 선택 < 0 = 웹캠, 1 = 동영상 파일, 2 = 사진 파일 >" << endl;
+	cin >> select;
+	VideoCapture capture;
+	if(select==0)
+		capture.open(0);
+	else if(select==1)
+		capture.open(samples::findFile(parser.get<String>("input")));
+	else if (select == 2)
+	{
+		input = imread("dog.jpg");
+		imshow("before", input);
+		Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
+		mnet.setInput(input_blob);
+		Mat output = mnet.forward();
+		std::vector<detectionResult> vResultRect;
+		for (int i = 0; i < output.rows; i++)
+		{
+			const int probability_index = 5;
+			const int probability_size = output.cols - probability_index;
+			float* prob_array_ptr = &output.at<float>(i, probability_index);
+			size_t objectClass = std::max_element(prob_array_ptr, prob_array_ptr + probability_size) - prob_array_ptr;
+			float confidence = output.at<float>(i, (int)objectClass + probability_index);
+			if (confidence > 0.24f)
+			{
+				float x_center = output.at<float>(i, 0) * (float)input.cols;
+				float y_center = output.at<float>(i, 1) * (float)input.rows;
+				float width = output.at<float>(i, 2) * (float)input.cols;
+				float height = output.at<float>(i, 3) * (float)input.rows;
+				Point2i p1(round(x_center - width / 2.f), round(y_center - height / 2.f));
+				Point2i p2(round(x_center + width / 2.f), round(y_center + height / 2.f));
+				Rect2i object(p1, p2);
+
+				detectionResult tmp;
+				tmp.plateRect = object;
+				tmp.confidence = confidence;
+				tmp.type = objectClass;
+				vResultRect.push_back(tmp);
+			}
+		}
+		NMS(vResultRect);
+		if (vResultRect.size() > 0)
+			for (int i = 0; i < vResultRect.size(); i++)
+			{
+				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
+				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 2, cv::Scalar(0, 0, 0), 3);
+				cout << "name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
+			}
+		imshow("after", input);
+		waitKey(0);
+		return;
+	}
+	else
+	{
+		cout << "올바르지 않은 모드입니다!" << endl;
+		return;
+	}
+
 	if (!capture.isOpened())
 	{
 		cerr << "Unable to open: " << parser.get<String>("input") << endl;
 		return;
 	}
 
+	double forward_speed_test = 0;
+	double processing_speed_test = 0;
 	while (1)
 	{
 		/////////////////////////////////////////////////////////////////////////**
 		capture >> input;
 		if (input.empty())
 			break;
-		rectangle(input, Point(0, 0), Point(200, 70), cv::Scalar(255, 255, 255), -1);      //get the frame number and write it on the current frame
+
+		rectangle(input, Point(0, 0), Point(100, 30), cv::Scalar(255, 255, 255), -1);      //get the frame number and write it on the current frame
 		stringstream ss;
 		ss << capture.get(CAP_PROP_POS_FRAMES);     // CAP_PROP_POS_FRAMES : 동영상의 현재 프레임 수
 		string frameNumberString = ss.str();
-		putText(input, frameNumberString.c_str(), Point(70, 50), 0, 2, Scalar(0, 0, 0), 3);   // 영상에 프레임 번호를 넣는 명령어
-		namedWindow("original", 0);
-		resizeWindow("original", 1000, 1000);
-		imshow("original", input);
-		waitKey(10);
+		putText(input, frameNumberString.c_str(), Point(10, 25), 0, 1, Scalar(0, 0, 0), 2);   // 영상에 프레임 번호를 넣는 명령어
+		namedWindow("before", 0);
+		resizeWindow("before", 1000, 1000);
+		imshow("before", input);
+		waitKey(1);
 		//////////////////////////////////////////////////////////////////////////**
 		Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
 		mnet.setInput(input_blob);
 		start2 = clock();
-		Mat output;
-		for (int i = 0; i < TEST_FORWARD_INTERVAL; i++)
-			output = mnet.forward();
+		Mat output = mnet.forward();
 		end2 = clock();
-		//cout << output.rows << endl << output.cols << endl;
+		forward_speed_test += end2 - start2;
 
 		////////////////////////////////////////////////////////////
 		start3 = clock();
@@ -114,25 +168,25 @@ void main(int argc, char* argv[])
 		}
 		NMS(vResultRect);
 		end3 = clock();
+		processing_speed_test += end3 - start3;
+
 		if (vResultRect.size() > 0)
 			for (int i = 0; i < vResultRect.size(); i++)
 			{
 				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
 				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 2, cv::Scalar(0, 0, 0),3);
-				cout << "name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
+				cout << "frame:" << capture.get(CAP_PROP_POS_FRAMES) << "   name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
 			}
 		namedWindow("after", 0);
 		resizeWindow("after", 1000, 1000);
 		imshow("after", input);
-		imshow("after", input);
 	}
-	cv::imshow("input", input);
-	cv::waitKey();
-
 	///////////////////////////////////////////////////////////
 
-
-	cout << endl << endl << (end1 - start1) << endl << (end2 - start2) / TEST_FORWARD_INTERVAL << endl << (end3 - start3) << endl;
+	cout << endl << endl;
+	cout << "readNet time: " << (end1 - start1) << "ms" << endl;
+	cout << "forward time: " << forward_speed_test / capture.get(CAP_PROP_POS_FRAMES) << "ms" << endl;
+	cout << "result image processing time: " << processing_speed_test / capture.get(CAP_PROP_POS_FRAMES) << "ms" << endl << endl;
 
 	return;
 }
