@@ -1,5 +1,8 @@
-﻿#include <stdio.h>
+﻿#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
 #include <iostream>
+#include <string>
+#include <fstream>
 #include <opencv2/opencv.hpp>
 #include <algorithm>
 #include <time.h>
@@ -12,11 +15,11 @@ using namespace cv::dnn;
 
 struct detectionResult
 {
-	cv::Rect plateRect;
+	Rect plateRect;
 	double confidence;
 	int type;
 };
-void NMS(std::vector<detectionResult>& vResultRect);
+void NMS(vector<detectionResult>& vResultRect);
 const char* params
 = "{ help h         |           | Print usage }"
 "{ input          | video2.mp4 | Path to a video or a sequence of image }"
@@ -28,12 +31,29 @@ void main(int argc, char* argv[])
 	Mat input;// = imread("dog.jpg");
 	string cfg = "yolov2-tiny.cfg";
 	string weight = "yolov2-tiny.weights";
+	string names[82]; 
+	ifstream file("yolov2-tiny.names");
+	if (file.is_open())
+	{
+		int name_index = 0;
+		while (getline(file, names[name_index]))
+		{
+			name_index++;
+		}
+		file.close();
+	}
+	else 
+	{
+		cout << "Unable to open file";
+		return;
+	}
+
 
 	start1 = clock();
 	Net mnet = readNet(weight, cfg);
 	end1 = clock();
-	//VideoCapture capture(samples::findFile(parser.get<String>("input")));
-	VideoCapture capture(0);
+	VideoCapture capture(samples::findFile(parser.get<String>("input")));
+	//VideoCapture capture(0);
 	if (!capture.isOpened())
 	{
 		cerr << "Unable to open: " << parser.get<String>("input") << endl;
@@ -46,17 +66,17 @@ void main(int argc, char* argv[])
 		capture >> input;
 		if (input.empty())
 			break;
-		rectangle(input, cv::Point(10, 2), cv::Point(100, 20), cv::Scalar(255, 255, 255), -1);      //get the frame number and write it on the current frame
+		rectangle(input, Point(0, 0), Point(200, 70), cv::Scalar(255, 255, 255), -1);      //get the frame number and write it on the current frame
 		stringstream ss;
 		ss << capture.get(CAP_PROP_POS_FRAMES);     // CAP_PROP_POS_FRAMES : 동영상의 현재 프레임 수
 		string frameNumberString = ss.str();
-		putText(input, frameNumberString.c_str(), cv::Point(15, 15), FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 0));   // 영상에 프레임 번호를 넣는 명령어
+		putText(input, frameNumberString.c_str(), Point(70, 50), 0, 2, Scalar(0, 0, 0), 3);   // 영상에 프레임 번호를 넣는 명령어
 		namedWindow("original", 0);
 		resizeWindow("original", 1000, 1000);
 		imshow("original", input);
 		waitKey(10);
 		//////////////////////////////////////////////////////////////////////////**
-		Mat input_blob = blobFromImage(input, 1 / 255.F, cv::Size(416, 416), cv::Scalar(), true, false);
+		Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
 		mnet.setInput(input_blob);
 		start2 = clock();
 		Mat output;
@@ -81,9 +101,9 @@ void main(int argc, char* argv[])
 				float y_center = output.at<float>(i, 1) * (float)input.rows;
 				float width = output.at<float>(i, 2) * (float)input.cols;
 				float height = output.at<float>(i, 3) * (float)input.rows;
-				cv::Point2i p1(round(x_center - width / 2.f), round(y_center - height / 2.f));
-				cv::Point2i p2(round(x_center + width / 2.f), round(y_center + height / 2.f));
-				cv::Rect2i object(p1, p2);
+				Point2i p1(round(x_center - width / 2.f), round(y_center - height / 2.f));
+				Point2i p2(round(x_center + width / 2.f), round(y_center + height / 2.f));
+				Rect2i object(p1, p2);
 
 				detectionResult tmp;
 				tmp.plateRect = object;
@@ -97,8 +117,9 @@ void main(int argc, char* argv[])
 		if (vResultRect.size() > 0)
 			for (int i = 0; i < vResultRect.size(); i++)
 			{
-				cv::rectangle(input, vResultRect[i].plateRect, cv::Scalar(0, 0, 255), 2);
-				printf("index: %d, confidence: %g\n", vResultRect[i].type, vResultRect[i].confidence);
+				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
+				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 2, cv::Scalar(0, 0, 0),3);
+				cout << "name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
 			}
 		namedWindow("after", 0);
 		resizeWindow("after", 1000, 1000);
@@ -112,7 +133,6 @@ void main(int argc, char* argv[])
 
 
 	cout << endl << endl << (end1 - start1) << endl << (end2 - start2) / TEST_FORWARD_INTERVAL << endl << (end3 - start3) << endl;
-
 
 	return;
 }
