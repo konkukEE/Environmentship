@@ -94,7 +94,7 @@ void main(int argc, char* argv[])
 			for (int i = 0; i < vResultRect.size(); i++)
 			{
 				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
-				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 2, cv::Scalar(0, 0, 0), 3);
+				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 1.7, Scalar(0, 255, 0), 2.8);
 				cout << "name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
 			}
 		imshow("after", input);
@@ -174,8 +174,8 @@ void main(int argc, char* argv[])
 			for (int i = 0; i < vResultRect.size(); i++)
 			{
 				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
-				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 2, cv::Scalar(0, 0, 0),3);
-				cout << "frame:" << capture.get(CAP_PROP_POS_FRAMES) << "   name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
+				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 1.7, Scalar(0, 255, 0), 2.8);
+				cout << "frame:" << capture.get(CAP_PROP_POS_FRAMES) << "  name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
 			}
 		namedWindow("after", 0);
 		resizeWindow("after", 1000, 1000);
