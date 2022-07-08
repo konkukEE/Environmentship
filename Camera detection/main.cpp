@@ -1,224 +1,33 @@
 ﻿#define _CRT_SECURE_NO_WARNINGS
+#include <stdio.h>
 #include <iostream>
 #include <string>
-#include <fstream>
-#include <opencv2/opencv.hpp>
-#include <algorithm>
-#include <time.h>
+
+#include "stopwatch.h"
+#include "network.h"
+#include "video.h"
 
 using namespace std;
-using namespace cv;
-using namespace cv::dnn;
 
-struct detectionResult
+void main()
 {
-	Rect plateRect;
-	double confidence;
-	int type;
-};
-void NMS(vector<detectionResult>& vResultRect);
-const char* params
-= "{ help h         |           | Print usage }"
-"{ input          | video2.mp4 | Path to a video or a sequence of image }"
-"{ algo           | MOG2      | Background subtraction method (KNN, MOG2) }";
-clock_t start1, start2, start3, end1, end2, end3;
-void main(int argc, char* argv[])
-{
-	CommandLineParser parser(argc, argv, params);
-	Mat input;// = imread("dog.jpg");
 	string cfg = "yolov2-tiny.cfg";
 	string weight = "yolov2-tiny.weights";
-	string names[82]; 
-	ifstream file("yolov2-tiny.names");
-	if (file.is_open())
-	{
-		int name_index = 0;
-		while (getline(file, names[name_index]))
-		{
-			name_index++;
-		}
-		file.close();
-	}
-	else 
-	{
-		cout << "Unable to open file";
-		return;
-	}
+	string name = "yolov2-tiny.names";
+	string sourcefile1 = "video2.mp4";
+	string sourcefile2 = "dog.jpg";
 
-	start1 = clock();
-	Net mnet = readNet(weight, cfg);
-	end1 = clock();
-	
-	int select;
-	cout << "모드 선택 < 0 = 웹캠, 1 = 동영상 파일, 2 = 사진 파일 >" << endl;
-	cin >> select;
+	vector<string> names= NetworkSetting(weight, cfg, name);
 	VideoCapture capture;
-	if(select==0)
-		capture.open(0);
-	else if(select==1)
-		capture.open(samples::findFile(parser.get<String>("input")));
-	else if (select == 2)
-	{
-		input = imread("dog.jpg");
-		imshow("before", input);
-		Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
-		mnet.setInput(input_blob);
-		Mat output = mnet.forward();
-		std::vector<detectionResult> vResultRect;
-		for (int i = 0; i < output.rows; i++)
-		{
-			const int probability_index = 5;
-			const int probability_size = output.cols - probability_index;
-			float* prob_array_ptr = &output.at<float>(i, probability_index);
-			size_t objectClass = std::max_element(prob_array_ptr, prob_array_ptr + probability_size) - prob_array_ptr;
-			float confidence = output.at<float>(i, (int)objectClass + probability_index);
-			if (confidence > 0.24f)
-			{
-				float x_center = output.at<float>(i, 0) * (float)input.cols;
-				float y_center = output.at<float>(i, 1) * (float)input.rows;
-				float width = output.at<float>(i, 2) * (float)input.cols;
-				float height = output.at<float>(i, 3) * (float)input.rows;
-				Point2i p1(round(x_center - width / 2.f), round(y_center - height / 2.f));
-				Point2i p2(round(x_center + width / 2.f), round(y_center + height / 2.f));
-				Rect2i object(p1, p2);
+	vread(capture, sourcefile2);
+	vshow(capture, names);
 
-				detectionResult tmp;
-				tmp.plateRect = object;
-				tmp.confidence = confidence;
-				tmp.type = objectClass;
-				vResultRect.push_back(tmp);
-			}
-		}
-		NMS(vResultRect);
-		if (vResultRect.size() > 0)
-			for (int i = 0; i < vResultRect.size(); i++)
-			{
-				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
-				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 1.7, Scalar(0, 255, 0), 2.8);
-				cout << "name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
-			}
-		imshow("after", input);
-		waitKey(0);
-		return;
-	}
-	else
-	{
-		cout << "올바르지 않은 모드입니다!" << endl;
-		return;
-	}
-
-	if (!capture.isOpened())
-	{
-		cerr << "Unable to open: " << parser.get<String>("input") << endl;
-		return;
-	}
-
-	double forward_speed_test = 0;
-	double processing_speed_test = 0;
-	while (1)
-	{
-		/////////////////////////////////////////////////////////////////////////**
-		capture >> input;
-		if (input.empty())
-			break;
-
-		rectangle(input, Point(0, 0), Point(100, 30), cv::Scalar(255, 255, 255), -1);      //get the frame number and write it on the current frame
-		stringstream ss;
-		ss << capture.get(CAP_PROP_POS_FRAMES);     // CAP_PROP_POS_FRAMES : 동영상의 현재 프레임 수
-		string frameNumberString = ss.str();
-		putText(input, frameNumberString.c_str(), Point(10, 25), 0, 1, Scalar(0, 0, 0), 2);   // 영상에 프레임 번호를 넣는 명령어
-		namedWindow("before", 0);
-		resizeWindow("before", 1000, 1000);
-		imshow("before", input);
-		waitKey(1);
-		//////////////////////////////////////////////////////////////////////////**
-		Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
-		mnet.setInput(input_blob);
-		start2 = clock();
-		Mat output = mnet.forward();
-		end2 = clock();
-		forward_speed_test += end2 - start2;
-
-		////////////////////////////////////////////////////////////
-		start3 = clock();
-		std::vector<detectionResult> vResultRect;
-		for (int i = 0; i < output.rows; i++)
-		{
-			const int probability_index = 5;
-			const int probability_size = output.cols - probability_index;
-			float* prob_array_ptr = &output.at<float>(i, probability_index);
-			size_t objectClass = std::max_element(prob_array_ptr, prob_array_ptr + probability_size) - prob_array_ptr;
-			float confidence = output.at<float>(i, (int)objectClass + probability_index);
-			if (confidence > 0.24f)
-			{
-				float x_center = output.at<float>(i, 0) * (float)input.cols;
-				float y_center = output.at<float>(i, 1) * (float)input.rows;
-				float width = output.at<float>(i, 2) * (float)input.cols;
-				float height = output.at<float>(i, 3) * (float)input.rows;
-				Point2i p1(round(x_center - width / 2.f), round(y_center - height / 2.f));
-				Point2i p2(round(x_center + width / 2.f), round(y_center + height / 2.f));
-				Rect2i object(p1, p2);
-
-				detectionResult tmp;
-				tmp.plateRect = object;
-				tmp.confidence = confidence;
-				tmp.type = objectClass;
-				vResultRect.push_back(tmp);
-			}
-		}
-		NMS(vResultRect);
-		end3 = clock();
-		processing_speed_test += end3 - start3;
-
-		if (vResultRect.size() > 0)
-			for (int i = 0; i < vResultRect.size(); i++)
-			{
-				rectangle(input, vResultRect[i].plateRect, Scalar(0, 0, 255), 2);
-				putText(input, names[vResultRect[i].type], Point2i(vResultRect[i].plateRect.x, vResultRect[i].plateRect.y), 0, 1.7, Scalar(0, 255, 0), 2.8);
-				cout << "frame:" << capture.get(CAP_PROP_POS_FRAMES) << "  name: " << names[vResultRect[i].type] << ", confidence: " << vResultRect[i].confidence << endl;
-			}
-		namedWindow("after", 0);
-		resizeWindow("after", 1000, 1000);
-		imshow("after", input);
-	}
-	///////////////////////////////////////////////////////////
-
-	cout << endl << endl;
-	cout << "readNet time: " << (end1 - start1) << "ms" << endl;
-	cout << "forward time: " << forward_speed_test / capture.get(CAP_PROP_POS_FRAMES) << "ms" << endl;
-	cout << "result image processing time: " << processing_speed_test / capture.get(CAP_PROP_POS_FRAMES) << "ms" << endl << endl;
 
 	return;
 }
 
-void NMS(std::vector<detectionResult>& vResultRect)
-{
-	if (vResultRect.size() <= 1)
-		return;
 
-	for (int i = 0; i < vResultRect.size() - 1; i++)
-	{
-		for (int j = i + 1; j < vResultRect.size(); j++)
-		{
-			double IOURate = (double)(vResultRect[i].plateRect & vResultRect[j].plateRect).area() / (vResultRect[i].plateRect | vResultRect[j].plateRect).area();
-			if (IOURate >= 0.5)
-			{
-				if (vResultRect[i].confidence > vResultRect[j].confidence) {
-					vResultRect.erase(vResultRect.begin() + j);
-					j--;
-				}
-				else {
-					vResultRect.erase(vResultRect.begin() + i);
-					i--;
-					break;
-				}
-			}
-		}
-	}
-}
-
-// 영상처리 주석
-/*
+/* 영상처리 주석
 #include <iostream>
 #include <sstream>
 #include <opencv2/imgcodecs.hpp>// 기본 이미지 코덱이 들어있음 (코덱 : 영상 장비에서 촬영한 영상 파일이 너무 큰 것을 작게 만들거나, 즉 압축하거나 푸는 것)
@@ -328,7 +137,7 @@ THRESH_TOZERO_INV : 픽셀 값이 threshold 보다 크면 0, 작으면 픽셀값
 
 // VideoCapture 클래스: https://diyver.tistory.com/57
 
-// add 함수 : http://hongkwan.blogspot.com/2013/01/opencv-2-6-example.html 
+// add 함수 : http://hongkwan.blogspot.com/2013/01/opencv-2-6-example.html
 // 영상 산술연산 관련 : https://deep-learning-study.tistory.com/115
 
 // 배경 삭제 코드 전체적인 설명. https://docs.opencv.org/3.4/d1/dc5/tutorial_background_subtraction.html 아래 explanation에 더욱 자세한 설명이 있는 링크를 걸어둠
