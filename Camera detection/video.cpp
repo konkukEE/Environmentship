@@ -60,7 +60,9 @@ void vshow(VideoCapture& capture, vector<string> names)
 		}
 
 		speedtest.record("forward");
-		vector<detectionResult> vResultRect = ObjectDetection(input);
+		vector<detectionResult> vResultRect;
+		ObjectDetection(input, vResultRect);
+		//ObjectDetection(input, vResultRect, 1);
 		speedtest.record("forward");
 		speedtest.record("processing");
 		PrintDetection(input, vResultRect, names, ++frame);

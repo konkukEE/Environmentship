@@ -11,15 +11,26 @@ using namespace std;
 
 void main()
 {
+	string name1 = "yolov2-tiny.names";
+	string name2 = "yolov5s-onnx.names";
+	string name3 = "chess.names";
+
+	string sourcefile1 = "video2.mp4";
+	string sourcefile2 = "video4.mp4";
+	string sourcefile3 = "dog.jpg";
+	string sourcefile4 = "chess.jpg";
+
 	string cfg = "yolov2-tiny.cfg";
 	string weight = "yolov2-tiny.weights";
-	string name = "yolov2-tiny.names";
-	string sourcefile1 = "video2.mp4";
-	string sourcefile2 = "dog.jpg";
 
-	vector<string> names= NetworkSetting(weight, cfg, name);
+	string onnx1 = "yolov5s.onnx";
+	string onnx2 = "chess_v5.onnx";
+	string onnx3 = "chess_v7.onnx";
+
+	vector<string> names = NetworkSetting(onnx1, name2);
+	//vector<string> names = NetworkSetting(weight, cfg, name1);
 	VideoCapture capture;
-	vread(capture, sourcefile2);
+	vread(capture, sourcefile1);
 	vshow(capture, names);
 
 
