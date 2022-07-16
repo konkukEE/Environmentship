@@ -9,34 +9,44 @@
 
 using namespace std;
 
-void main()
+/*
+	 <coco dataset>
+	 name
+	 "../data/name/coco.names"
+
+	 weight
+	 "../data/weight/coco_v2n_416.weights"
+	 "../data/weight/coco_v2n_416.cfg"
+	 "../data/weight/coco_v5n_320.onnx"
+	 "../data/weight/coco_v5n_416.onnx"
+	 "../data/weight/coco_v5s_320.onnx"
+	 "../data/weight/coco_v5s_416.onnx"
+
+
+	 <chess dataset>
+	 name
+	 "../data/name/chess.names"
+
+	 weight
+	 "chess_v5n_320.onnx"
+	 "chess_v5n_416.onnx"
+	 "chess_v5s_416.onnx"
+*/
+int BLOBSIZE1 = 320;
+int NAME_SIZE1 = 80;
+int main()
 {
-	string name1 = "yolov2-tiny.names";
-	string name2 = "yolov5s-onnx.names";
-	string name3 = "chess.names";
+	string name = "../data/name/coco.names";
+	string videofile = "../data/video/ship.mp4";
+	string imagefile = "../data/image/chess.jpg";
+	string weight = "../data/weight/coco_v5s_320.onnx";
 
-	string sourcefile1 = "video2.mp4";
-	string sourcefile2 = "video4.mp4";
-	string sourcefile3 = "dog.jpg";
-	string sourcefile4 = "chess.jpg";
-
-	string cfg = "yolov2-tiny.cfg";
-	string weight = "yolov2-tiny.weights";
-
-	string onnx1 = "yolov5s.onnx";
-	string onnx2 = "chess_v5.onnx";
-	string onnx3 = "chess_v7.onnx";
-
-	vector<string> names = NetworkSetting(onnx1, name2);
-	//vector<string> names = NetworkSetting(weight, cfg, name1);
 	VideoCapture capture;
-	vread(capture, sourcefile1);
-	vshow(capture, names);
+	vread(capture, videofile);
+	vshow(capture, NetworkSetting(weight, name, BLOBSIZE1, NAME_SIZE1));
 
-
-	return;
+	return 0;
 }
-
 
 /* 영상처리 주석
 #include <iostream>

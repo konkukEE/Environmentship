@@ -5,7 +5,7 @@ void stopwatch::record(string type)
 	clock_t tmp = clock();
 	nameset[type].push_back(tmp);
 }
-void stopwatch::print(int option)
+void stopwatch::print(int option)   // Option1: Only the last measured value is displayed
 {
 	for (map<string, vector<clock_t>>::iterator iter = nameset.begin(); iter != nameset.end(); iter++)
 	{
@@ -17,7 +17,10 @@ void stopwatch::print(int option)
 		for (int i = 1; i < ((int)data.size() & (~1)); i = i + 2)
 		{
 			if (option)
-				cout << data[i] - data[i - 1] << "ms" << endl;
+			{
+				cout << data[((int)data.size() & (~1)) - 1] - data[((int)data.size() & (~1)) - 2] << "ms" << endl;
+				return;
+			}
 			avg += data[i] - data[i - 1];
 		}
 		avg /= ((int)data.size() & (~1)) / 2;

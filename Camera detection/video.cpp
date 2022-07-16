@@ -1,6 +1,5 @@
 #pragma once
 #include "video.h"
-#include "stopwatch.h"
 
 void PrintDetection(Mat input, vector<detectionResult> output, vector<string> names, int frame, int windowsize)
 {
@@ -10,7 +9,6 @@ void PrintDetection(Mat input, vector<detectionResult> output, vector<string> na
 	resizeWindow("before", windowsize, windowsize);
 	imshow("before", input);
 	waitKey(1);
-
 	for (int i = 0; i < (int)output.size(); i++)
 	{
 		rectangle(input, output[i].plateRect, Scalar(0, 0, 255), 2);
@@ -45,7 +43,7 @@ int vread(VideoCapture& capture, string sourcefile)
 
 	return 1;
 }
-void vshow(VideoCapture& capture, vector<string> names)
+void vshow(VideoCapture& capture, Netinf network)   // Show video processed by network 
 {
 	Mat input;
 	int frame = 0;
@@ -61,12 +59,14 @@ void vshow(VideoCapture& capture, vector<string> names)
 
 		speedtest.record("forward");
 		vector<detectionResult> vResultRect;
-		ObjectDetection(input, vResultRect);
-		//ObjectDetection(input, vResultRect, 1);
+		if (network.BLOBSIZE != -1)
+			ObjectDetection(input, network, vResultRect);
+		else
+			ObjectDetection(input, network, vResultRect, 0);
 		speedtest.record("forward");
-		speedtest.record("processing");
-		PrintDetection(input, vResultRect, names, ++frame);
-		speedtest.record("processing");
+		PrintDetection(input, vResultRect, network.names, ++frame);
+
+		speedtest.print(1);
 	}
 	speedtest.print();
 }

@@ -1,42 +1,42 @@
 #include "network.h"
 
-Net mnet;
-vector<string> NetworkSetting(string weight, string cfg, string name)
+
+// onnx weight
+Netinf::Netinf(string onnx, int blob_size, int name_size)
 {
-	mnet = readNet(weight, cfg);
-	vector<string> names;
+	this->mnet = readNet(onnx);
+	this->BLOBSIZE = blob_size;
+	this->NAME_SIZE = name_size;
+	this->OUTPUT_SIZE = name_size + 5;
+
+	if (blob_size == 320)
+		this->TOTALBOX = 6300;
+	else if (blob_size == 416)
+		this->TOTALBOX = 10647;
+	else if (blob_size == 630)
+		this->TOTALBOX = 25200;
+	else
+		cout << "BLOB SIZE NOT SUPPORTED" << endl;
+}
+Netinf NetworkSetting(string onnx, string name, int blob_size, int name_size)
+{
+	Netinf network(onnx, blob_size, name_size);
+
 	ifstream file(name);
 	if (file.is_open())
 	{
-		int name_index = 0;
 		string tmp;
 		while (getline(file, tmp))
-			names.push_back(tmp);
+			network.names.push_back(tmp);
+
 		file.close();
 	}
 	else
 		cout << "Unable to open file";
 
-	return names;
+	return network;
 }
-vector<string> NetworkSetting(string onnx, string name)
-{
-	mnet = readNet(onnx);
-	vector<string> names;
-	ifstream file(name);
-	if (file.is_open())
-	{
-		int name_index = 0;
-		string tmp;
-		while (getline(file, tmp))
-			names.push_back(tmp);
-		file.close();
-	}
-	else
-		cout << "Unable to open file";
-	return names;
-}
-void ObjectDetection(Mat input, vector<detectionResult>& result)
+void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  // Process the input image using net to produce the result
 {	
 	// Data for forwarding
 	Mat blob;
@@ -49,8 +49,8 @@ void ObjectDetection(Mat input, vector<detectionResult>& result)
 	vector<Rect> boxes;         // Detected Rect
 
 	// Variable for Data Collecting
-	float x_factor = (float)input.cols / BLOBSIZE;
-	float y_factor = (float)input.rows / BLOBSIZE;
+	float x_factor = (float)input.cols / net.BLOBSIZE;
+	float y_factor = (float)input.rows / net.BLOBSIZE;
 	float cx, cy, w, h;
 	Point class_id;
 	float confidence;
@@ -63,19 +63,19 @@ void ObjectDetection(Mat input, vector<detectionResult>& result)
 	// Iterator
 	int i, idx;
 	detectionResult tmp;
-
-	blobFromImage(input, blob, 1 / 255.F, Size(BLOBSIZE, BLOBSIZE), Scalar(), true, false);
-	mnet.setInput(blob);
-	mnet.forward(output, mnet.getUnconnectedOutLayersNames());
+	
+	blobFromImage(input, blob, 1 / 255.F, Size(net.BLOBSIZE, net.BLOBSIZE), Scalar(), true, false);
+	net.mnet.setInput(blob);
+	net.mnet.forward(output, net.mnet.getUnconnectedOutLayersNames());
 	data = (float*)output[0].data;
 
-	for (i = 0; i < TOTALBOX; i++)
+	for (i = 0; i < net.TOTALBOX; i++)
 	{
 		confidence = data[4];
 		if (confidence >= CONFIDENCE_THRESHOLD)
 		{
 			score = data + 5;
-			Mat scores(1, CLASS_NAME_SIZE, CV_32FC1, score);
+			Mat scores(1, net.NAME_SIZE, CV_32FC1, score);
 			minMaxLoc(scores, 0, &max_score, 0, &class_id);
 			if (max_score > CLASS_THRESHOLD)
 			{
@@ -93,9 +93,9 @@ void ObjectDetection(Mat input, vector<detectionResult>& result)
 				boxes.push_back(object);
 			}
 		}
-		data += CLASS_SIZE;
+		data += net.OUTPUT_SIZE;
 	}
-	
+
 	NMSBoxes(boxes, confidences, CLASS_THRESHOLD, NMS_THRESHOLD, indices);
 	for (i = 0; i < indices.size(); i++)
 	{
@@ -104,15 +104,42 @@ void ObjectDetection(Mat input, vector<detectionResult>& result)
 		tmp.confidence = confidences[idx];
 		tmp.type = class_ids[idx];
 		result.push_back(tmp);
-	}
 
+	}
+	
 	return;
 }
-void ObjectDetection(Mat input, vector<detectionResult>& result, int trigger)
+
+// darknet weight
+Netinf::Netinf(string weight, string cfg)
+{
+	this->mnet = readNet(weight, cfg);
+	this->BLOBSIZE = -1;
+}
+Netinf NetworkSetting(string weight, string cfg, string name)
+{
+	Netinf network(weight, cfg);
+	
+
+	ifstream file(name);
+	if (file.is_open())
+	{
+		string tmp;
+		while (getline(file, tmp))
+			network.names.push_back(tmp);
+
+		file.close();
+	}
+	else
+		cout << "Unable to open file";
+
+	return network;
+}
+void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result, int trigger)
 {
 	Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
-	mnet.setInput(input_blob);
-	Mat output = mnet.forward();
+	net.mnet.setInput(input_blob);
+	Mat output = net.mnet.forward();
 
 	for (int i = 0; i < output.rows; i++)
 	{

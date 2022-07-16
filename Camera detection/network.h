@@ -7,23 +7,33 @@ using namespace std;
 using namespace cv;
 using namespace cv::dnn;
 
-#define CONFIDENCE_THRESHOLD 0.375F
+#define CONFIDENCE_THRESHOLD 0.5F
 #define CLASS_THRESHOLD 0.5F
 #define NMS_THRESHOLD 0.4375F
-#define BLOBSIZE 416
-#define TOTALBOX 10647
 
-#define CLASS_SIZE 85
-#define CLASS_NAME_SIZE CLASS_SIZE-5
-
-
+class Netinf
+{
+public:
+	Netinf(string onnx, int BLOBSIZE, int CLASS_SIZE);
+	Netinf(string weight, string cfg);
+	vector<string> names;
+	Net mnet;
+	int BLOBSIZE;
+	int NAME_SIZE;
+	int OUTPUT_SIZE;
+	int TOTALBOX;
+};
 struct detectionResult
 {
 	Rect plateRect;
 	double confidence;
 	int type;
 };
-vector<string> NetworkSetting(string weight, string cfg, string name);
-vector<string> NetworkSetting(string onnx, string name);
-void ObjectDetection(Mat input, vector<detectionResult>& result);
-void ObjectDetection(Mat input, vector<detectionResult>& result, int trigger);
+
+// onnx weight
+Netinf NetworkSetting(string onnx, string name, int blob_size, int class_size);
+void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result);
+
+// darknet weight
+Netinf NetworkSetting(string weight, string cfg, string name);
+void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result, int trigger);
