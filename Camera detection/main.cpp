@@ -15,12 +15,25 @@ using namespace std;
 	 "../data/name/coco.names"
 
 	 weight
-	 "../data/weight/coco_v2n_416.weights"
-	 "../data/weight/coco_v2n_416.cfg"
 	 "../data/weight/coco_v5n_320.onnx"
 	 "../data/weight/coco_v5n_416.onnx"
+	 "../data/weight/coco_v5n_640.onnx"
+
 	 "../data/weight/coco_v5s_320.onnx"
 	 "../data/weight/coco_v5s_416.onnx"
+	 "../data/weight/coco_v5s_640.onnx"
+
+	 "../data/weight/coco_v5m_320.onnx"
+	 "../data/weight/coco_v5m_416.onnx"
+	 "../data/weight/coco_v5m_640.onnx"
+
+	 "../data/weight/coco_v5l_320.onnx"
+	 "../data/weight/coco_v5l_416.onnx"
+	 "../data/weight/coco_v5l_640.onnx"
+
+	 "../data/weight/coco_v5x_320.onnx"
+	 "../data/weight/coco_v5x_416.onnx"
+	 "../data/weight/coco_v5x_640.onnx"
 
 
 	 <chess dataset>
@@ -32,20 +45,51 @@ using namespace std;
 	 "chess_v5n_416.onnx"
 	 "chess_v5s_416.onnx"
 */
-int BLOBSIZE1 = 320;
-int NAME_SIZE1 = 80;
+int BLOBSIZE(string weight);
 int main()
 {
 	string name = "../data/name/coco.names";
 	string videofile = "../data/video/ship.mp4";
 	string imagefile = "../data/image/chess.jpg";
-	string weight = "../data/weight/coco_v5s_320.onnx";
+	string weight = "../data/weight/coco_v5n_320.onnx";
 
 	VideoCapture capture;
 	vread(capture, videofile);
-	vshow(capture, NetworkSetting(weight, name, BLOBSIZE1, NAME_SIZE1));
+	vshow(capture, NetworkSetting(weight, name, BLOBSIZE(weight)));
 
 	return 0;
+}
+int BLOBSIZE(string weight)
+{
+	int iter = 0;
+	int tmp = 0;
+	int check = 0;
+	int result = 0;
+
+	while (1)
+	{
+		if (check)
+		{
+			if (check == 1)
+				result += (weight[iter] - '0') * 100;
+			else if (check == 2)
+				result += (weight[iter] - '0') * 10;
+			else if (check == 3)
+				result += (weight[iter] - '0');
+			else if (check == 4)
+				break;
+
+			check++;
+		}
+
+		if (weight[iter] == '_')
+			if (++tmp == 2)
+				check = 1;
+
+		iter++;
+	}
+
+	return result;
 }
 
 /* 영상처리 주석

@@ -2,42 +2,45 @@
 
 
 // onnx weight
-Netinf::Netinf(string onnx, int blob_size, int name_size)
+Netinf::Netinf(string onnx, vector<string> name, int blobsize)
 {
 	this->mnet = readNet(onnx);
-	this->BLOBSIZE = blob_size;
-	this->NAME_SIZE = name_size;
-	this->OUTPUT_SIZE = name_size + 5;
+	this->names = name;
+	this->BLOBSIZE = blobsize;
+	this->NAME_SIZE = name.size();
+	this->OUTPUT_SIZE = this->NAME_SIZE + 5;
 
-	if (blob_size == 320)
+	if (blobsize == 320)
 		this->TOTALBOX = 6300;
-	else if (blob_size == 416)
+	else if (blobsize == 416)
 		this->TOTALBOX = 10647;
-	else if (blob_size == 630)
+	else if (blobsize == 640)
 		this->TOTALBOX = 25200;
 	else
 		cout << "BLOB SIZE NOT SUPPORTED" << endl;
 }
-Netinf NetworkSetting(string onnx, string name, int blob_size, int name_size)
+Netinf NetworkSetting(string onnx, string name, int blobsize)
 {
-	Netinf network(onnx, blob_size, name_size);
+	vector<string> tmpv;
 
 	ifstream file(name);
 	if (file.is_open())
 	{
 		string tmp;
 		while (getline(file, tmp))
-			network.names.push_back(tmp);
+			tmpv.push_back(tmp);
 
 		file.close();
 	}
 	else
 		cout << "Unable to open file";
 
+	Netinf network(onnx, tmpv, blobsize);
+
 	return network;
 }
 void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  // Process the input image using net to produce the result
-{	
+{
 	// Data for forwarding
 	Mat blob;
 	vector<Mat> output;
@@ -56,14 +59,14 @@ void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  //
 	float confidence;
 	float* score;
 	double max_score;
-    
+
 	// After NMS index
 	vector<int> indices;
 
 	// Iterator
 	int i, idx;
 	detectionResult tmp;
-	
+
 	blobFromImage(input, blob, 1 / 255.F, Size(net.BLOBSIZE, net.BLOBSIZE), Scalar(), true, false);
 	net.mnet.setInput(blob);
 	net.mnet.forward(output, net.mnet.getUnconnectedOutLayersNames());
@@ -82,7 +85,7 @@ void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  //
 				confidences.push_back(confidence);
 				class_ids.push_back(class_id.x);
 				cx = data[0];
-				cy = data[1]; 
+				cy = data[1];
 				w = data[2];
 				h = data[3];
 
@@ -106,7 +109,7 @@ void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  //
 		result.push_back(tmp);
 
 	}
-	
+
 	return;
 }
 
@@ -119,7 +122,7 @@ Netinf::Netinf(string weight, string cfg)
 Netinf NetworkSetting(string weight, string cfg, string name)
 {
 	Netinf network(weight, cfg);
-	
+
 
 	ifstream file(name);
 	if (file.is_open())
