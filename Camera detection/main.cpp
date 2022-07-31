@@ -61,7 +61,7 @@ int main()
 	std::string name = "../data/name/coco.names";
 	std::string videofile = "../data/video/ship.mp4";
 	std::string imagefile = "../data/image/chess.jpg";
-	std::string weight = "../data/weight/coco_v5n_416.onnx";
+	std::string weight = "../data/weight/coco_v5n_320.onnx";
 
 	/// <summary>
 	WSADATA wsaData;
@@ -95,7 +95,6 @@ int main()
 	{
 		image = RECVMAT(hClient);
 
-		//imshow("image", image);
 		vshow(image, ServerNet);
 		waitKey(1);
 
