@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Camera detection", "Camera 
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Server", "Server\Server.vcxproj", "{BF92DE13-A706-45B1-A7BD-D98136E0CA5F}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Client", "Client\Client.vcxproj", "{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{BF92DE13-A706-45B1-A7BD-D98136E0CA5F}.Release|x64.Build.0 = Release|x64
 		{BF92DE13-A706-45B1-A7BD-D98136E0CA5F}.Release|x86.ActiveCfg = Release|Win32
 		{BF92DE13-A706-45B1-A7BD-D98136E0CA5F}.Release|x86.Build.0 = Release|Win32
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Debug|x64.ActiveCfg = Debug|x64
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Debug|x64.Build.0 = Debug|x64
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Debug|x86.ActiveCfg = Debug|Win32
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Debug|x86.Build.0 = Debug|Win32
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Release|x64.ActiveCfg = Release|x64
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Release|x64.Build.0 = Release|x64
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Release|x86.ActiveCfg = Release|Win32
+		{BC4AB88C-C923-44F2-9E80-E0DC5CCD2BBC}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
