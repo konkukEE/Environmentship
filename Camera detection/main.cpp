@@ -103,10 +103,6 @@ int main()
 	}
 	/// </summary>
 
-	VideoCapture capture;
-	vread(capture, videofile);
-	vshow(capture, NetworkSetting(weight, name, BLOBSIZE(weight)));
-
 	return 0;
 }
 int BLOBSIZE(std::string weight)
