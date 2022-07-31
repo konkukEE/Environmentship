@@ -112,6 +112,9 @@ int main()
 		MOVE(key);
 	}
 
+	closesocket(hSocket);
+
+	WSACleanup();
 	return 0;
 }
 int BLOBSIZE(std::string weight)

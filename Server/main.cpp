@@ -101,7 +101,11 @@ int main()
 		if (SENDKEY(hClient))
 			break;
 	}
-	/// </summary>
+
+	closesocket(hListen);
+	closesocket(hClient);
+
+	WSACleanup();
 
 	return 0;
 }
