@@ -16,10 +16,12 @@
 #include "video.h"
 
 
+int BLOBSIZE(std::string weight);
 int SENDKEY(SOCKET hClient);
 int RECVKEY(SOCKET hSocket, char key[2]);
 void SENDMAT(Mat image, SOCKET hClient);
 Mat RECVMAT(SOCKET hSocket);
+void MOVE(char key[2]);
 
 /*
 	 <coco dataset>
@@ -57,7 +59,7 @@ Mat RECVMAT(SOCKET hSocket);
 	 "chess_v5n_416.onnx"
 	 "chess_v5s_416.onnx"
 */
-int BLOBSIZE(std::string weight);
+
 int main()
 {
 	std::string name = "../data/name/coco.names";
@@ -91,17 +93,24 @@ int main()
 	Mat image;
 	VideoCapture capture;
 	capture.open(0);
+	if (!capture.isOpened())
+	{
+		std::cout << "Can't open the video" << std::endl;
+		return -1;
+	}
+	
 	Netinf ClientNet = NetworkSetting(weight, name, BLOBSIZE(weight));
 	while (1)
 	{
 		capture >> image;
-		vshow(image, ClientNet);
 		SENDMAT(image, hSocket);
+		vshow(image, ClientNet);
 
 		if (RECVKEY(hSocket, key))
 			break;
+
+		MOVE(key);
 	}
-	/// </summary>
 
 	return 0;
 }
@@ -255,4 +264,40 @@ Mat RECVMAT(SOCKET hSocket)
 
 	delete[]buffer;
 	return image;
+}
+void MOVE(char key[2])
+{
+	static int SPEED = 0;
+	static int RSPEED = 0;
+	static int LSPEED = 0;
+
+	if (key[0] == 'w')            // Go
+	{
+		if (SPEED <= 100)
+			SPEED++;
+	}
+	else if (key[0] == 's')       // Back
+	{
+		if (SPEED > 0)
+			SPEED--;
+	}
+
+	if (key[1] == 'a')            // Right
+	{
+		if (LSPEED > 0)
+			LSPEED--;
+	}
+	else if (key[1] == 'd')       // Left
+	{
+		if (RSPEED > 0)
+			RSPEED--;
+	}
+	else if (key[1] == 'n')
+		RSPEED = LSPEED = SPEED;
+
+	std::cout << "LSPEED = " << LSPEED << std::endl;
+	std::cout << "RSPEED = " << RSPEED << std::endl;
+	//softPwmWrite(RMOTOR, RSPEED);
+	//softPwmWrite(LMOTOR, LSPEED);
+	//delay(20);
 }

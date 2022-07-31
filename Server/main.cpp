@@ -14,6 +14,7 @@
 #include "video.h"
 
 
+int BLOBSIZE(std::string weight);
 int SENDKEY(SOCKET hClient);
 int RECVKEY(SOCKET hSocket, char key[2]);
 void SENDMAT(Mat image, SOCKET hClient);
@@ -55,7 +56,7 @@ Mat RECVMAT(SOCKET hSocket);
 	 "chess_v5n_416.onnx"
 	 "chess_v5s_416.onnx"
 */
-int BLOBSIZE(std::string weight);
+
 int main()
 {
 	std::string name = "../data/name/coco.names";
