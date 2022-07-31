@@ -3,7 +3,7 @@
 #include <opencv2/opencv.hpp>
 #include <fstream>
 #include <opencv2/imgproc.hpp>
-using namespace std;
+
 using namespace cv;
 using namespace cv::dnn;
 
@@ -14,9 +14,9 @@ using namespace cv::dnn;
 class Netinf
 {
 public:
-	Netinf(string onnx, vector<string>name, int blobsize);
-	Netinf(string weight, string cfg);
-	vector<string> names;
+	Netinf(std::string onnx, std::vector<std::string>name, int blobsize);
+	Netinf(std::string weight, std::string cfg);
+	std::vector<std::string> names;
 	Net mnet;
 	int BLOBSIZE;
 	int NAME_SIZE;
@@ -31,9 +31,9 @@ struct detectionResult
 };
 
 // onnx weight
-Netinf NetworkSetting(string onnx, string name, int blobsize);
-void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result);
+Netinf NetworkSetting(std::string onnx, std::string name, int blobsize);
+void ObjectDetection(Mat input, Netinf net, std::vector<detectionResult>& result);
 
 // darknet weight
-Netinf NetworkSetting(string weight, string cfg, string name);
-void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result, int trigger);
+Netinf NetworkSetting(std::string weight, std::string cfg, std::string name);
+void ObjectDetection(Mat input, Netinf net, std::vector<detectionResult>& result, int trigger);

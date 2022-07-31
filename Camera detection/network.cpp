@@ -2,7 +2,7 @@
 
 
 // onnx weight
-Netinf::Netinf(string onnx, vector<string> name, int blobsize)
+Netinf::Netinf(std::string onnx, std::vector<std::string> name, int blobsize)
 {
 	this->mnet = readNet(onnx);
 	this->names = name;
@@ -17,39 +17,39 @@ Netinf::Netinf(string onnx, vector<string> name, int blobsize)
 	else if (blobsize == 640)
 		this->TOTALBOX = 25200;
 	else
-		cout << "BLOB SIZE NOT SUPPORTED" << endl;
+		std::cout << "BLOB SIZE NOT SUPPORTED" << std::endl;
 }
-Netinf NetworkSetting(string onnx, string name, int blobsize)
+Netinf NetworkSetting(std::string onnx, std::string name, int blobsize)
 {
-	vector<string> tmpv;
+	std::vector<std::string> tmpv;
 
-	ifstream file(name);
+	std::ifstream file(name);
 	if (file.is_open())
 	{
-		string tmp;
+		std::string tmp;
 		while (getline(file, tmp))
 			tmpv.push_back(tmp);
 
 		file.close();
 	}
 	else
-		cout << "Unable to open file";
+		std::cout << "Unable to open file";
 
 	Netinf network(onnx, tmpv, blobsize);
 
 	return network;
 }
-void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  // Process the input image using net to produce the result
+void ObjectDetection(Mat input, Netinf net, std::vector<detectionResult>& result)  // Process the input image using net to produce the result
 {
 	// Data for forwarding
 	Mat blob;
-	vector<Mat> output;
+	std::vector<Mat> output;
 	float* data;
 
 	// Data before NMS
-	vector<int> class_ids;      // Detected Class 
-	vector<float> confidences;  // Detected Score
-	vector<Rect> boxes;         // Detected Rect
+	std::vector<int> class_ids;      // Detected Class 
+	std::vector<float> confidences;  // Detected Score
+	std::vector<Rect> boxes;         // Detected Rect
 
 	// Variable for Data Collecting
 	float x_factor = (float)input.cols / net.BLOBSIZE;
@@ -61,7 +61,7 @@ void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  //
 	double max_score;
 
 	// After NMS index
-	vector<int> indices;
+	std::vector<int> indices;
 
 	// Iterator
 	int i, idx;
@@ -114,31 +114,31 @@ void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result)  //
 }
 
 // darknet weight
-Netinf::Netinf(string weight, string cfg)
+Netinf::Netinf(std::string weight, std::string cfg)
 {
 	this->mnet = readNet(weight, cfg);
 	this->BLOBSIZE = -1;
 }
-Netinf NetworkSetting(string weight, string cfg, string name)
+Netinf NetworkSetting(std::string weight, std::string cfg, std::string name)
 {
 	Netinf network(weight, cfg);
 
 
-	ifstream file(name);
+	std::ifstream file(name);
 	if (file.is_open())
 	{
-		string tmp;
+		std::string tmp;
 		while (getline(file, tmp))
 			network.names.push_back(tmp);
 
 		file.close();
 	}
 	else
-		cout << "Unable to open file";
+		std::cout << "Unable to open file";
 
 	return network;
 }
-void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result, int trigger)
+void ObjectDetection(Mat input, Netinf net, std::vector<detectionResult>& result, int trigger)
 {
 	Mat input_blob = blobFromImage(input, 1 / 255.F, Size(416, 416), Scalar(), true, false);
 	net.mnet.setInput(input_blob);
@@ -149,7 +149,7 @@ void ObjectDetection(Mat input, Netinf net, vector<detectionResult>& result, int
 		const int probability_index = 5;
 		const int probability_size = output.cols - probability_index;
 		float* prob_array_ptr = &output.at<float>(i, probability_index);
-		size_t objectClass = max_element(prob_array_ptr, prob_array_ptr + probability_size) - prob_array_ptr;
+		size_t objectClass = std::max_element(prob_array_ptr, prob_array_ptr + probability_size) - prob_array_ptr;
 		float confidence = output.at<float>(i, (int)objectClass + probability_index);
 		if (confidence > 0.5)
 		{
