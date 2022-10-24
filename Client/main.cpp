@@ -68,7 +68,7 @@ void MOVE(char key[2]);
 	 "chess_v5n_416.onnx"
 	 "chess_v5s_416.onnx"
 */
-
+int fd = 0;
 int main()
 {
 	char SERVER_IP[30];
@@ -101,6 +101,9 @@ int main()
 
 
 	//
+	char device[] = "/dev/ttyACM0";
+	unsigned long baud = 9600;
+	unsigned long time = 0;
 	printf("%s \n", "Raspberry Startup!");
 	fflush(stdout);
 	if ((fd = serialOpen(device, baud)) < 0)
