@@ -66,7 +66,10 @@ void MOVE(char key[2]);
 
 int main()
 {
-	char SERVER_IP[] = "192.168.200.191";
+	char SERVER_IP[30];
+	printf("IP: ");
+	scanf("%s", SERVER_IP);
+	//char SERVER_IP[] = "192.168.200.191";
 	std::string name = "../data/name/coco.names";
 	std::string videofile = "../data/video/ship.mp4";
 	std::string imagefile = "../data/image/chess.jpg";
