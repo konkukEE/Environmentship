@@ -11,6 +11,11 @@
 #include <iostream>
 #include <time.h>
 
+#include <stdint.h>
+#include <errno.h>
+#include <wiringPi.h>
+#include <wiringSerial.h>
+
 #include <opencv2/opencv.hpp>
 #include <opencv2/imgproc.hpp>
 #include <fstream>
@@ -95,6 +100,20 @@ int main()
 	printf("Message from server :%s\n", buffer);
 
 
+	//
+	printf("%s \n", "Raspberry Startup!");
+	fflush(stdout);
+	if ((fd = serialOpen(device, baud)) < 0)
+	{
+		fprintf(stderr, "Unable to open serial device: %s\n", strerror(errno));
+		exit(1);
+	}
+	if (wiringPiSetup() == -1)
+	{
+		fprintf(stdout, "Unable to start wiringPi: %s\n", strerror(errno));
+		exit(1);
+	}
+	//
 	char key[2];
 	Mat image;
 	VideoCapture capture;
@@ -199,37 +218,21 @@ void SENDMAT(Mat image, int socket)
 }
 void MOVE(char key[2])
 {
-	static int SPEED = 0;
-	static int RSPEED = 0;
-	static int LSPEED = 0;
-
-	if (key[0] == 'w')            // Go
+	if(key[0]=='w')
 	{
-		if (SPEED <= 100)
-			SPEED++;
+		serialPutchar(fd, 119);
 	}
-	else if (key[0] == 's')       // Back
+	else if(key[0]=='s')
 	{
-		if (SPEED > 0)
-			SPEED--;
+		serialPutchar(fd, 115);
 	}
 
-	if (key[1] == 'a')            // Right
+	if (key[1] = 'a')
 	{
-		if (LSPEED > 0)
-			LSPEED--;
+		serialPutchar(fd, 97);
 	}
-	else if (key[1] == 'd')       // Left
+	else if (key[1] = 'd')
 	{
-		if (RSPEED > 0)
-			RSPEED--;
+		serialPutchar(fd, 100);
 	}
-	else if (key[1] == 'n')
-		RSPEED = LSPEED = SPEED;
-
-	std::cout << "LSPEED = " << LSPEED << std::endl;
-	std::cout << "RSPEED = " << RSPEED << std::endl;
-	//softPwmWrite(RMOTOR, RSPEED);
-	//softPwmWrite(LMOTOR, LSPEED);
-	//delay(20);
 }
