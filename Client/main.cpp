@@ -132,7 +132,10 @@ int main()
 		vshow(image, ClientNet);
 
 		if (RECVKEY(key, clnt_sock))
+		{
+			MOVE(key);
 			break;
+		}
 
 		MOVE(key);
 	}
@@ -218,6 +221,11 @@ void SENDMAT(Mat image, int socket)
 }
 void MOVE(char key[2])
 {
+	if (key[0] == 'q')
+	{
+		serialPutchar(fd, 113);
+	}
+
 	if(key[0]=='w')
 	{
 		serialPutchar(fd, 119);
