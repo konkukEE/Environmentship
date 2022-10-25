@@ -147,7 +147,7 @@ int main()
 			key[0] = serialGetchar(fd);
 			key[1] = serialGetchar(fd);
 			fflush(stdout);
-			write(socket, key, 2);
+			write(clnt_sock, key, 2);
 		}
 	}
 	close(clnt_sock);
