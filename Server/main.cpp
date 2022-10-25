@@ -96,10 +96,13 @@ int main()
 	{
 		image = RECVMAT(hClient);
 
-		vshow(image, ServerNet);
+		//vshow(image, ServerNet);
+		imshow("Camera", image);
 
 		if (SENDKEY(hClient))
 			break;
+
+		waitKey(1);
 	}
 
 	closesocket(hListen);

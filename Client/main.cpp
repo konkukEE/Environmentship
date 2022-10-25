@@ -132,15 +132,23 @@ int main()
 	{
 		capture >> image;
 		SENDMAT(image, clnt_sock);
-		vshow(image, ClientNet);
+		//vshow(image, ClientNet);
 
 		if (RECVKEY(key, clnt_sock))
 		{
 			MOVE(key);
 			break;
 		}
+		else
+			MOVE(key);
 
-		MOVE(key);
+		if (serialDataAvail(fd))
+		{
+			key[0] = serialGetchar(fd);
+			key[1] = serialGetchar(fd);
+			fflush(stdout);
+			write(socket, key, 2);
+		}
 	}
 	close(clnt_sock);
 
@@ -227,23 +235,35 @@ void MOVE(char key[2])
 	if (key[0] == 'q')
 	{
 		serialPutchar(fd, 113);
+		return;
 	}
-
-	if(key[0]=='w')
+	else
 	{
-		serialPutchar(fd, 119);
+		if (key[0] == 'w')
+		{
+			serialPutchar(fd, 119);
+		}
+		else if (key[0] == 's')
+		{
+			serialPutchar(fd, 115);
+		}
+		else
+		{
+			serialPutchar(fd, 110);
+		}
+		if (key[1] = 'a')
+		{
+			serialPutchar(fd, 97);
+		}
+		else if (key[1] = 'd')
+		{
+			serialPutchar(fd, 100);
+		}
+		else
+		{
+			serialPutchar(fd, 110);
+		}
 	}
-	else if(key[0]=='s')
-	{
-		serialPutchar(fd, 115);
-	}
-
-	if (key[1] = 'a')
-	{
-		serialPutchar(fd, 97);
-	}
-	else if (key[1] = 'd')
-	{
-		serialPutchar(fd, 100);
-	}
+	fflush(stdout);
 }
+
