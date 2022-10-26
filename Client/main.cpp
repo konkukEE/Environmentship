@@ -141,15 +141,14 @@ int main()
 		}
 		else
 			MOVE(key);
-		/*
+		
 		if (serialDataAvail(fd))
 		{
 			key[0] = serialGetchar(fd);
 			key[1] = serialGetchar(fd);
 			fflush(stdout);
-			write(clnt_sock, key, 2);
+			printf("%c%c\n", key[0], key[1]);
 		}
-		*/
 	}
 	close(clnt_sock);
 

@@ -168,11 +168,6 @@ int SENDKEY(SOCKET hSocket)
 			key[1] = 'd';
 
 
-		if (key[0] != 'n' || key[1] != 'n')
-		{
-			printf("%c ", key[0]);
-			printf("%c\n", key[1]);
-		}
 		send(hSocket, key, 2, 0);
 		return 0;
 	}
