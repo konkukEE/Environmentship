@@ -232,6 +232,7 @@ void SENDMAT(Mat image, int socket)
 }
 void MOVE(char key[2])
 {
+	serialPutchar(fd, 32);
 	if (key[0] == 'q')
 	{
 		serialPutchar(fd, 113);
