@@ -193,6 +193,7 @@ int RECVKEY(char key[2], int socket)
 
 	if (key[0] == 'q')
 		return 1;
+	/*
 	else
 	{
 		if (key[0] != 'n' || key[1] != 'n')
@@ -206,6 +207,7 @@ int RECVKEY(char key[2], int socket)
 
 		return 0;
 	}
+	*/
 }
 void SENDMAT(Mat image, int socket)
 {
