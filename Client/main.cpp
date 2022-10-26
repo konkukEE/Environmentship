@@ -136,6 +136,7 @@ int main()
 
 		if (RECVKEY(key, clnt_sock))
 		{
+			printf("%c %c\n", key[0], key[1]);
 			MOVE(key);
 			break;
 		}
