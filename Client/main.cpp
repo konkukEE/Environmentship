@@ -193,6 +193,8 @@ int RECVKEY(char key[2], int socket)
 
 	if (key[0] == 'q')
 		return 1;
+
+	return 0;
 	/*
 	else
 	{
