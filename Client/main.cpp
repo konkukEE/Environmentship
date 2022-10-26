@@ -136,13 +136,12 @@ int main()
 
 		if (RECVKEY(key, clnt_sock))
 		{
-			printf("%c %c\n", key[0], key[1]);
 			MOVE(key);
 			break;
 		}
 		else
 			MOVE(key);
-
+		/*
 		if (serialDataAvail(fd))
 		{
 			key[0] = serialGetchar(fd);
@@ -150,6 +149,7 @@ int main()
 			fflush(stdout);
 			write(clnt_sock, key, 2);
 		}
+		*/
 	}
 	close(clnt_sock);
 
