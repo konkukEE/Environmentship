@@ -28,10 +28,9 @@
 #define PACKET_SIZE 1024
 
 int BLOBSIZE(std::string weight);
-int RECVKEY(char key[2], int socket);
-void SENDMAT(Mat image, int socket);
+void RECVKEY(int socket, char* key, int size);
+void SENDMAT(int socket, Mat image);
 void MOVE(char key[2]);
-
 /*
 	 <coco dataset>
 	 name
@@ -99,8 +98,6 @@ int main()
 		printf("read error\n");
 	printf("Message from server :%s\n", buffer);
 
-
-	//
 	char device[] = "/dev/ttyACM0";
 	unsigned long baud = 9600;
 	unsigned long time = 0;
@@ -128,20 +125,20 @@ int main()
 	}
 	
 	Netinf ClientNet = NetworkSetting(weight, name, BLOBSIZE(weight));
+	char key[2];
 	while (1)
 	{
+//      ******* Image Send *******
 		capture >> image;
 		SENDMAT(image, clnt_sock);
-		//vshow(image, ClientNet);
 
-		if (RECVKEY(key, clnt_sock))
-		{
-			MOVE(key);
+//		******* key Recv and Send to ino *******
+		RECVKEY(clnt_sock, key, 2);
+		MOVE(key);
+		if (key[0] == 'q')
 			break;
-		}
-		else
-			MOVE(key);
-		
+
+//      ******* velo Recv *******
 		if (serialDataAvail(fd))
 		{
 			key[0] = serialGetchar(fd);
@@ -150,8 +147,9 @@ int main()
 			printf("%c%c\n", key[0], key[1]);
 		}
 	}
-	close(clnt_sock);
 
+
+	close(clnt_sock);
 	return 0;
 }
 int BLOBSIZE(std::string weight)
@@ -186,32 +184,11 @@ int BLOBSIZE(std::string weight)
 
 	return result;
 }
-int RECVKEY(char key[2], int socket)
+void RECVKEY(int socket, char* key, int size)
 {
-	key[0] = key[1] = 'q';
-	read(socket, key, 2);
-
-	if (key[0] == 'q')
-		return 1;
-
-	return 0;
-	/*
-	else
-	{
-		if (key[0] != 'n' || key[1] != 'n')
-			printf("\n");
-
-		if (key[0] == 'w' || key[0] == 's')
-			printf("%c ", key[0]);
-
-		if (key[1] == 'a' || key[1] == 'd')
-			printf("%c", key[1]);
-
-		return 0;
-	}
-	*/
+	read(socket, key, size);
 }
-void SENDMAT(Mat image, int socket)
+void SENDMAT(int socket, Mat image)
 {
 	char rows[4];
 	char cols[4];
@@ -225,7 +202,6 @@ void SENDMAT(Mat image, int socket)
 	for (int i = 0; i < 4 - std::to_string(image.cols).size(); i++)
 		cols[3 - i] = -1;
 	memcpy(buffer, image.data, size);
-
 
 	//write(clnt_sock, msg, sizeof(msg));
 	write(socket, rows, 4);
@@ -243,6 +219,7 @@ void MOVE(char key[2])
 	}
 	else
 	{
+		// FORWARD BACKWARD
 		if (key[0] == 'w')
 		{
 			serialPutchar(fd, 119);
@@ -255,6 +232,8 @@ void MOVE(char key[2])
 		{
 			serialPutchar(fd, 110);
 		}
+
+		// RIGHT LEFT
 		if (key[1] = 'a')
 		{
 			serialPutchar(fd, 97);

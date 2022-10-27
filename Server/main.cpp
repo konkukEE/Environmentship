@@ -15,8 +15,8 @@
 
 
 int BLOBSIZE(std::string weight);
-int SENDKEY(SOCKET hClient);
-int RECVKEY(SOCKET hSocket, char key[2]);
+void SENDKEY(SOCKET hClient, char* key, int size);
+void RECVKEY(SOCKET hClient, char* key, int size);
 void SENDMAT(Mat image, SOCKET hClient);
 Mat RECVMAT(SOCKET hSocket);
 
@@ -64,7 +64,6 @@ int main()
 	std::string imagefile = "../data/image/chess.jpg";
 	std::string weight = "../data/weight/coco_v5n_320.onnx";
 
-	/// <summary>
 	WSADATA wsaData;
 	WSAStartup(MAKEWORD(2, 2), &wsaData);
 
@@ -92,24 +91,25 @@ int main()
 
 	Mat image;
 	Netinf ServerNet = NetworkSetting(weight, name, BLOBSIZE(weight));
+	char key[2];
 	while (1)
 	{
+//		******* Image Recv and show *******
 		image = RECVMAT(hClient);
-
 		//vshow(image, ServerNet);
 		imshow("Camera", image);
 
-		if (SENDKEY(hClient))
-			break;
+//		******* key Send *******
+		key[0] = key[1] = 'n';
+		SENDKEY(hClient, key, 2);
 
 		waitKey(1);
 	}
 
+
 	closesocket(hListen);
 	closesocket(hClient);
-
 	WSACleanup();
-
 	return 0;
 }
 int BLOBSIZE(std::string weight)
@@ -144,16 +144,13 @@ int BLOBSIZE(std::string weight)
 
 	return result;
 }
-int SENDKEY(SOCKET hSocket)
+void SENDKEY(SOCKET hClient, char* key, int size)
 {
-	char key[2] = { 'n','n' };
-
 	if (GetAsyncKeyState('Q') & 0x8000)
 	{
 		key[0] = key[1] = 'q';
 
-		send(hSocket, key, 2, 0);
-		return 1;
+		send(hClient, key, 2, 0);
 	}
 	else
 	{
@@ -167,31 +164,13 @@ int SENDKEY(SOCKET hSocket)
 		else if (GetAsyncKeyState('D') & 0x8000)
 			key[1] = 'd';
 
-
-		send(hSocket, key, 2, 0);
-		return 0;
+		send(hClient, key, size, 0);
 	}
+	fflush(stdin);
 }
-int RECVKEY(SOCKET hSocket, char key[2])
+void RECVKEY(SOCKET hClient, char* key, int size)
 {
-	key[0] = key[1] = 'q';
-	recv(hSocket, key, 2, 0);
-
-	if (key[0] == 'q')
-		return 1;
-	else
-	{
-		if (key[0] != 'n' || key[1] != 'n')
-			printf("\n");
-
-		if (key[0] == 'w' || key[0] == 's')
-			printf("%c ", key[0]);
-
-		if (key[1] == 'a' || key[1] == 'd')
-			printf("%c", key[1]);
-
-		return 0;
-	}
+	recv(hClient, key, size, 0);
 }
 void SENDMAT(Mat image, SOCKET hSocket)
 {
