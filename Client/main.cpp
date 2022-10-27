@@ -130,7 +130,7 @@ int main()
 	{
 //      ******* Image Send *******
 		capture >> image;
-		SENDMAT(image, clnt_sock);
+		SENDMAT(clnt_sock, image);
 
 //		******* key Recv and Send to ino *******
 		RECVKEY(clnt_sock, key, 2);
