@@ -113,8 +113,9 @@ int main()
 		fprintf(stdout, "Unable to start wiringPi: %s\n", strerror(errno));
 		exit(1);
 	}
-	//
-	char key[2];
+
+
+	// Roop 변수들 초기화
 	Mat image;
 	VideoCapture capture;
 	capture.open(0);
@@ -123,7 +124,8 @@ int main()
 		std::cout << "Can't open the video" << std::endl;
 		return -1;
 	}
-	
+	//
+
 	Netinf ClientNet = NetworkSetting(weight, name, BLOBSIZE(weight));
 	char key[2];
 	while (1)
