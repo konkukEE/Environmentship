@@ -102,6 +102,7 @@ int main()
 //		******* key Send *******
 		key[0] = key[1] = 'n';
 		SENDKEY(hClient, key, 2);
+		printf("%c %c\n", key[0], key[1]);
 
 		waitKey(1);
 	}

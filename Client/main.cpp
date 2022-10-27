@@ -217,6 +217,7 @@ void MOVE(char key[2])
 	if (key[0] == 'q')
 	{
 		serialPutchar(fd, 113);
+		printf("Stop\n");
 		return;
 	}
 	else
@@ -225,28 +226,34 @@ void MOVE(char key[2])
 		if (key[0] == 'w')
 		{
 			serialPutchar(fd, 119);
+			printf("Forward ");
 		}
 		else if (key[0] == 's')
 		{
 			serialPutchar(fd, 115);
+			printf("Backward ");
 		}
 		else
 		{
 			serialPutchar(fd, 110);
+			printf("None ");
 		}
 
 		// RIGHT LEFT
 		if (key[1] = 'a')
 		{
 			serialPutchar(fd, 97);
+			printf("Left\n");
 		}
 		else if (key[1] = 'd')
 		{
 			serialPutchar(fd, 100);
+			printf("Right\n");
 		}
 		else
 		{
 			serialPutchar(fd, 110);
+			printf("None\n");
 		}
 	}
 	fflush(stdout);
