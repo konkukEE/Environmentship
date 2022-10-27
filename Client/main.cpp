@@ -240,12 +240,12 @@ void MOVE(char key[2])
 		}
 
 		// RIGHT LEFT
-		if (key[1] = 'a')
+		if (key[1] == 'a')
 		{
 			serialPutchar(fd, 97);
 			printf("Left\n");
 		}
-		else if (key[1] = 'd')
+		else if (key[1] == 'd')
 		{
 			serialPutchar(fd, 100);
 			printf("Right\n");
